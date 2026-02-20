@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI C3</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #1a1a1a; color: white; }
+        button { width: 220px; height: 120px; font-size: 1.8rem; font-weight: bold; cursor: pointer; border-radius: 20px; border: none; background: #007AFF; color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.3); touch-action: manipulation; }
+        button:active { background: #0051a8; transform: scale(0.95); }
+        #status { margin-top: 30px; font-size: 0.9rem; color: #aaa; }
+    </style>
+</head>
+<body>
+    <button id="playBtn">C3 (Ch 1)</button>
+    <div id="status">MIDIデバイスを待機中...</div>
+    <script>
+        let midiOutput = null;
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(midi => {
+                const update = () => {
+                    const outputs = Array.from(midi.outputs.values());
+                    midiOutput = outputs[0] || null;
+                    document.getElementById('status').innerText = midiOutput ? `接続: ${midiOutput.name}` : "デバイス未接続";
+                };
+                midi.onstatechange = update;
+                update();
+            });
+        }
+        const btn = document.getElementById('playBtn');
+        btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (midiOutput) midiOutput.send([0x90, 60, 100]);
+        });
+        btn.addEventListener('pointerup', (e) => {
+            e.preventDefault();
+            if (midiOutput) midiOutput.send([0x80, 60, 0]);
+        });
+    </script>
+</body>
+</html>
